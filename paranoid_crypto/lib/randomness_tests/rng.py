@@ -565,7 +565,7 @@ class SubsetSum(Rng):
 
 RNGS = {
     "urandom": Urandom(),
-    "mt19937": Mt19937(),
+    "mt199371": Mt19937(),
     "shake128": Shake128(),
     "gmp16": GmpRand(16),
     "gmp20": GmpRand(20),

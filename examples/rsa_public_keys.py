@@ -27,9 +27,13 @@ from absl import logging
 from paranoid_crypto import paranoid_pb2
 from paranoid_crypto.lib import paranoid
 from paranoid_crypto.lib import util
+from Crypto.PublicKey import RSA
+import OpenSSL
 
 _PROF = flags.DEFINE_bool("prof", None,
                           "generates a simple profile using cProfile")
+_TARGET = flags.DEFINE_string("target", None,
+                            "target public key pem test file ")
 
 # Below are examples of public numbers of RSA keys. There are multiple ways of
 # extracting such numbers. For example, given a file containing a PEM encoded
@@ -92,6 +96,7 @@ def main(argv: list[str]) -> None:
   Args:
     argv: command line arguments.
   """
+  print(_TARGET.value)
   if len(argv) > 1:
     raise app.UsageError("Too many commandline arguments.")
   if _PROF.value:
@@ -109,6 +114,33 @@ def main(argv: list[str]) -> None:
   res = test_res and test_res.result
   logging.info("Second key is weak to CheckFermat? %s", res)
 
+def Test(argv: list[str]) -> None:
+  """Examples of testing RSA public keys.
 
+  Args:
+    argv: command line arguments.
+  """
+  if len(argv) > 1:
+    raise app.UsageError("Too many commandline arguments.")
+  if _TARGET.value:
+    PkPair= getRSAPublicKeyParametersFromCert(_TARGET.value)
+    rsa_key = paranoid_pb2.RSAKey()
+    rsa_key.rsa_info.e = util.Int2Bytes(PkPair[0])
+    rsa_key.rsa_info.n = util.Int2Bytes(PkPair[1])
+    paranoid.CheckAllRSA([rsa_key], log_level=1)
+  else:
+    raise app.UsageError("No such file")
+  logging.info("Found first key to be potentially weak? %s",
+               rsa_key.test_info.weak)
+
+def getRSAPublicKeyParametersFromCert(file):
+  rsa_keys = []
+  cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(file).read())
+  t = OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, cert.get_pubkey()).decode("utf-8")
+  RSA.importKey(t) 
+  key = RSA.importKey(t)
+  return [key.e,key.n]
+  
 if __name__ == "__main__":
-  app.run(main)
+  app.run(Test)
+  # app.run(main)

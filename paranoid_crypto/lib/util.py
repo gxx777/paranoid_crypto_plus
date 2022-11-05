@@ -30,6 +30,7 @@ def Bytes2Int(bytes_val: bytes) -> int:
 
 
 def Int2Bytes(int_val: int) -> bytes:
+  print(int(int_val))
   return int.to_bytes(int(int_val), (int_val.bit_length() + 7) // 8, 'big')
 
 

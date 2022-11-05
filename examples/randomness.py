@@ -70,8 +70,10 @@ def test_sources() -> None:
   """Tests a specified pseudo random number generator or all of them."""
   if _SOURCE.value == "all":
     for prng_name in rng.RngNames():
+      print("prng_name: ",prng_name)
       test_source(prng_name)
   else:
+    print("_SOURCE.value: ",_SOURCE.value)
     test_source(_SOURCE.value)
 
 

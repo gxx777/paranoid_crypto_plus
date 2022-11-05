@@ -27,9 +27,14 @@ from absl import logging
 from paranoid_crypto import paranoid_pb2
 from paranoid_crypto.lib import paranoid
 from paranoid_crypto.lib import util
+from cryptography import x509
+from Crypto.PublicKey import RSA
+import OpenSSL
 
 _PROF = flags.DEFINE_bool("prof", None,
                           "generates a simple profile using cProfile")
+_TARGET = flags.DEFINE_string("target", None,
+                            "target public key pem test file ")
 
 # Below are examples of public numbers of EC keys. There are multiple ways of
 # extracting such numbers. For example, given a file containing a PEM encoded
@@ -117,5 +122,28 @@ def main(argv: list[str]) -> None:
   logging.info("Second key is weak to CheckWeakECPrivateKey? %s", res)
 
 
+def Test(argv: list[str]) -> None:
+  """Examples of testing RSA public keys.
+
+  Args:
+    argv: command line arguments.
+  """
+  if len(argv) > 1:
+    raise app.UsageError("Too many commandline arguments.")
+  if _TARGET.value:
+    cert = x509.load_pem_x509_certificate(open( _TARGET.value, 'rb').read())
+    
+    ec_key = paranoid_pb2.ECKey()
+    ec_key.ec_info.curve_type = paranoid_pb2.CurveType.CURVE_SECP256R1
+    ec_key.ec_info.x = util.Int2Bytes(cert.public_key().public_numbers().x)
+    ec_key.ec_info.y = util.Int2Bytes(cert.public_key().public_numbers().y)
+    paranoid.CheckAllEC([ec_key], log_level=1)
+  else:
+    raise app.UsageError("No such file")
+  logging.info("Found first key to be potentially weak? %s",
+               ec_key.test_info.weak)
+
+
 if __name__ == "__main__":
-  app.run(main)
+  app.run(Test)
+  # app.run(main)
