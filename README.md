@@ -97,7 +97,7 @@ I1105 20:54:15.510314 140600795275264 rsa_public_keys.py:133] Found first key to
 
 
 
-## 2.  EC
+## 2.  ECC
 
 需要提供ECC公钥的信息（r，s），已支持从证书中获取
 
