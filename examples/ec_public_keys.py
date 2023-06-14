@@ -143,7 +143,7 @@ def Test(argv: list[str]) -> None:
   logging.info("Found first key to be potentially weak? %s",
                ec_key.test_info.weak)
 
-
+# this is a test.
 if __name__ == "__main__":
   app.run(Test)
   # app.run(main)
